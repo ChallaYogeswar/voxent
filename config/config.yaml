@@ -1,0 +1,5 @@
+sample_rate: 16000
+min_segment_duration: 1.0
+male_pitch_threshold: 165
+female_pitch_threshold: 255
+confidence_margin: 20

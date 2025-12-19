@@ -1,0 +1,11 @@
+librosa
+numpy
+soundfile
+pydub
+torch
+pyannote.audio
+speechbrain
+scikit-learn
+pandas
+tqdm
+PyYAML
