@@ -3,3 +3,18 @@ min_segment_duration: 1.0
 male_pitch_threshold: 165
 female_pitch_threshold: 255
 confidence_margin: 20
+
+# Data Augmentation Settings
+enable_augmentation: true
+augmentation_methods:
+  - add_noise
+  - change_pitch
+  - change_speed
+  - change_volume
+augmentation_intensity: 0.1
+max_augmentations_per_sample: 3
+
+# Performance Settings
+parallel_workers: 2
+batch_size: 10
+memory_limit_gb: 4.0

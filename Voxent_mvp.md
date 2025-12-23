@@ -9,46 +9,48 @@ Actual Purpose: Research tool for extracting and curating high-quality voice dat
 ---
 ### Project Strucure
 
-voxent/
-├── config/
-│   └── config.yaml
-│
-├── data/
-│   ├── input_calls/
-│   ├── processed_audio/
-│   └── voice_dataset/
-│       ├── male/
-│       ├── female/
-│       ├── uncertain/
-│       └── metadata.csv
-│
-├── preprocessing/
-│   ├── audio_loader.py
-│   ├── normalize.py
-│   ├── vad.py
-│
-├── diarization/
-│   ├── diarizer.py
-│   └── segments.py
-│
-├── classification/
-│   ├── pitch_gender.py
-│   └── confidence.py
-│
-├── dataset/
-│   ├── organizer.py
-│   └── metadata.py
-│
-├── engine/
-│   ├── batch_runner.py
-│   └── logger.py
-│
-├── utils/
-│   ├── audio_utils.py
-│   └── file_utils.py
-│
-├── requirements.txt
-└── run_pipeline.py
+graph TD
+  voxent["voxent/"]
+
+  voxent --> config_dir["config/"]
+  config_dir --> config_yaml["config.yaml"]
+
+  voxent --> data_dir["data/"]
+  data_dir --> input_calls["input_calls/"]
+  data_dir --> processed_audio["processed_audio/"]
+  data_dir --> voice_dataset["voice_dataset/"]
+  voice_dataset --> male["male/"]
+  voice_dataset --> female["female/"]
+  voice_dataset --> uncertain["uncertain/"]
+  voice_dataset --> metadata_csv["metadata.csv"]
+
+  voxent --> preprocessing_dir["preprocessing/"]
+  preprocessing_dir --> audio_loader["audio_loader.py"]
+  preprocessing_dir --> normalize["normalize.py"]
+  preprocessing_dir --> vad["vad.py"]
+
+  voxent --> diarization_dir["diarization/"]
+  diarization_dir --> diarizer["diarizer.py"]
+  diarization_dir --> segments["segments.py"]
+
+  voxent --> classification_dir["classification/"]
+  classification_dir --> pitch_gender["pitch_gender.py"]
+  classification_dir --> confidence["confidence.py"]
+
+  voxent --> dataset_dir["dataset/"]
+  dataset_dir --> organizer["organizer.py"]
+  dataset_dir --> metadata_py["metadata.py"]
+
+  voxent --> engine_dir["engine/"]
+  engine_dir --> batch_runner["batch_runner.py"]
+  engine_dir --> logger["logger.py"]
+
+  voxent --> utils_dir["utils/"]
+  utils_dir --> audio_utils["audio_utils.py"]
+  utils_dir --> file_utils["file_utils.py"]
+
+  voxent --> requirements["requirements.txt"]
+  voxent --> run_pipeline["run_pipeline.py"]
 
 ## Core Objective
 
