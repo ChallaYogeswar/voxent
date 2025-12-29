@@ -1,14 +1,13 @@
+"""
+Updated classification/__init__.py
+Integrates advanced multi-feature classifier with GPU support
+"""
+
 import os
 import numpy as np
 import logging
-from typing import Tuple, Optional, Union
-
-# Try to import torch (optional for GPU)
-try:
-    import torch
-    TORCH_AVAILABLE = True
-except (ImportError, AttributeError):
-    TORCH_AVAILABLE = False
+import torch
+from typing import Tuple, Optional
 
 # Try to import advanced classifier
 try:
@@ -23,25 +22,14 @@ from .ml_classifier import MLGenderClassifier, load_ml_classifier
 
 logger = logging.getLogger(__name__)
 
-# Detect GPU (with fallback for CPU-only PyTorch)
-DEVICE = None
-if TORCH_AVAILABLE:
-    try:
-        if torch.cuda.is_available():
-            DEVICE = torch.device('cuda')
-            logger.info(f"🚀 GPU detected: {torch.cuda.get_device_name(0)}")
-            logger.info(f"   VRAM: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
-        else:
-            DEVICE = torch.device('cpu')
-            logger.debug("GPU not available, using CPU")
-    except (RuntimeError, AttributeError):
-        try:
-            DEVICE = torch.device('cpu')
-        except AttributeError:
-            DEVICE = None
-            logger.debug("Torch device management not available")
+# Detect GPU
+if torch.cuda.is_available():
+    DEVICE = torch.device('cuda')
+    logger.info(f"🚀 GPU detected: {torch.cuda.get_device_name(0)}")
+    logger.info(f"   VRAM: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
 else:
-    logger.debug("PyTorch not available, CPU-only mode")
+    DEVICE = torch.device('cpu')
+    logger.warning("⚠️  GPU not available, using CPU")
 
 
 class IntegratedGenderClassifier:
@@ -161,7 +149,7 @@ class IntegratedGenderClassifier:
         Returns:
             List of (label, confidence) tuples
         """
-        if self.device and hasattr(self.device, 'type') and self.device.type == 'cuda' and len(audio_batch) > 1:
+        if self.device.type == 'cuda' and len(audio_batch) > 1:
             logger.info(f"🚀 GPU batch classification: {len(audio_batch)} samples")
             
             # Use ML classifier for batch if available
@@ -194,7 +182,7 @@ class IntegratedGenderClassifier:
     def get_classifier_info(self) -> dict:
         """Get information about available classifiers."""
         return {
-            "device": str(self.device) if self.device else "CPU (Torch not available)",
+            "device": str(self.device),
             "ml_available": self.is_ml_available(),
             "advanced_available": self.is_advanced_available(),
             "ml_model_path": self.ml_model_path if self.is_ml_available() else None,
@@ -231,6 +219,7 @@ def create_classifier(config: dict) -> IntegratedGenderClassifier:
         pitch_female_threshold=pitch_female_threshold,
         use_advanced=use_advanced
     )
+
 
 # Global classifier instance
 _classifier_instance = None

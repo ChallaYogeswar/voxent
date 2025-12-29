@@ -235,7 +235,7 @@ if __name__ == "__main__":
         summary = assess_dataset_quality(dataset_dir)
         print("Dataset Quality Summary:")
         print(f"Total files: {summary['total_files']}")
-        print(".2f")
+        print(f"Average quality score: {summary['average_quality_score']:.2f}")
         print(f"High quality files (>70): {summary['high_quality_files']}")
         print(f"Low quality files (<30): {summary['low_quality_files']}")
 

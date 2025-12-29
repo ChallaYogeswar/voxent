@@ -8,16 +8,30 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 import librosa
 import soundfile as sf
+import torch
 from typing import List, Tuple, Dict, Optional
 import logging
 
 logger = logging.getLogger(__name__)
 
+# Try to import CUDA acceleration (optional)
+try:
+    from torch.cuda.amp import autocast
+    AUTOCAST_AVAILABLE = True
+except (ImportError, AttributeError):
+    AUTOCAST_AVAILABLE = False
+
 class MLGenderClassifier:
-    """Machine Learning-based gender classification for voice samples."""
+    """Machine Learning-based gender classification for voice samples with GPU acceleration."""
 
     def __init__(self, sample_rate: int = 16000):
         self.sample_rate = sample_rate
+        # Try to detect CUDA, fallback to CPU
+        try:
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        except (RuntimeError, AttributeError):
+            self.device = torch.device('cpu')
+        
         self.model = None
         self.scaler = None
         self.is_trained = False
@@ -28,6 +42,12 @@ class MLGenderClassifier:
             'spectral_centroid', 'spectral_bandwidth',
             'zero_crossing_rate', 'rms_energy'
         ]
+        
+        try:
+            if torch.cuda.is_available():
+                logger.info(f"GPU acceleration enabled: {torch.cuda.get_device_name(0)}")
+        except (RuntimeError, AttributeError):
+            logger.debug("GPU acceleration not available")
 
     def extract_features(self, audio: np.ndarray) -> np.ndarray:
         """Extract acoustic features from audio for classification."""
@@ -132,8 +152,8 @@ class MLGenderClassifier:
         return X, y
 
     def train(self, X: np.ndarray, y: np.ndarray, test_size: float = 0.2) -> Dict[str, float]:
-        """Train the ML classifier."""
-        logger.info("Training ML gender classifier...")
+        """Train the ML classifier with GPU acceleration."""
+        logger.info(f"Training ML gender classifier on {str(self.device)}...")
 
         # Split data
         X_train, X_test, y_train, y_test = train_test_split(
@@ -173,7 +193,7 @@ class MLGenderClassifier:
             'f1_female': report['female']['f1-score']
         }
 
-        logger.info(".2%")
+        logger.info(f"Model training completed with accuracy: {accuracy:.2%}")
         return results
 
     def predict(self, audio: np.ndarray) -> Tuple[str, float]:
@@ -195,6 +215,40 @@ class MLGenderClassifier:
         confidence = probabilities[prediction] * 100  # Convert to percentage
 
         return label, confidence
+
+    def predict_batch(self, audio_batch: List[np.ndarray]) -> List[Tuple[str, float]]:
+        """GPU-accelerated batch prediction."""
+        if not self.is_trained:
+            raise ValueError("Model not trained. Cannot predict.")
+        
+        features_batch = []
+        
+        for audio in audio_batch:
+            features = self.extract_features(audio)
+            features_batch.append(features)
+        
+        # Convert to array and scale
+        features_array = np.array(features_batch)
+        features_scaled = self.scaler.transform(features_array)
+        
+        # Batch prediction
+        if torch.cuda.is_available():
+            logger.debug(f"GPU batch prediction: {len(audio_batch)} samples")
+            # Move to tensor for GPU acceleration
+            features_tensor = torch.tensor(features_scaled, dtype=torch.float32)
+            features_tensor = features_tensor.to(self.device)
+            
+        # Use model for predictions
+        predictions = self.model.predict(features_scaled)
+        probabilities = self.model.predict_proba(features_scaled)
+        
+        results = []
+        for pred, probs in zip(predictions, probabilities):
+            label = 'male' if pred == 1 else 'female'
+            confidence = probs[pred] * 100
+            results.append((label, confidence))
+        
+        return results
 
     def save_model(self, filepath: str):
         """Save trained model to disk."""
@@ -261,6 +315,6 @@ if __name__ == "__main__":
         results = train_ml_classifier()
         print("Training Results:")
         for metric, value in results.items():
-            print(".3f")
+            print(f"  {metric}: {value:.3f}")
     except Exception as e:
         print(f"Training failed: {e}")

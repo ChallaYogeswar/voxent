@@ -40,8 +40,8 @@ class TestPipeline(unittest.TestCase):
     def test_pitch_estimation(self):
         """Test pitch estimation."""
         pitch = estimate_pitch(self.test_audio, self.sample_rate)
-        self.assertIsInstance(pitch, (int, float))
-        self.assertGreater(pitch, 0)
+        self.assertIsInstance(pitch, (int, float, np.floating))
+        self.assertGreater(float(pitch), 0)
 
     def test_config_validation(self):
         """Test configuration validation."""

@@ -114,6 +114,11 @@ def balance_dataset(dataset_dir, cfg):
         # Get list of files to augment
         files = [f for f in os.listdir(category_dir) if f.endswith('.wav')]
 
+        # Skip if no files in category
+        if len(files) == 0:
+            print(f"Skipping {category} category: no files found")
+            continue
+
         # Augment files
         augmentations_per_file = min(max_augmentations, max(1, augmentations_needed // len(files)))
         augmentations_created = 0
