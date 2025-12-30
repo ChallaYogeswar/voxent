@@ -1,0 +1,222 @@
+# VOXENT Configuration File
+# Updated for Speaker Diarization and Batch Processing
+
+# ============================================================================
+# GENERAL SETTINGS
+# ============================================================================
+project_name: "VOXENT"
+version: "2.0"
+description: "Voice dataset creation with speaker diarization and gender classification"
+
+# ============================================================================
+# PATHS
+# ============================================================================
+paths:
+  # Input directory for original audio files
+  input_calls: "data/input_calls"
+  
+  # Batch organization directory
+  batches: "data/batches"
+  
+  # Final output directory
+  voice_dataset: "data/voice_dataset"
+  
+  # Temporary processing directory
+  temp_dir: "data/temp"
+  
+  # Logs directory
+  logs: "logs"
+  
+  # Models directory
+  models: "models"
+
+# ============================================================================
+# HUGGINGFACE AUTHENTICATION
+# ============================================================================
+huggingface:
+  # Your HuggingFace token (required for pyannote.audio)
+  # Get token from: https://huggingface.co/settings/tokens
+  # Accept model at: https://huggingface.co/pyannote/speaker-diarization-3.1
+  token: null  # REPLACE WITH YOUR TOKEN
+  
+# ============================================================================
+# SPEAKER DIARIZATION SETTINGS
+# ============================================================================
+diarization:
+  # Model to use
+  model: "pyannote/speaker-diarization-3.1"
+  
+  # Speaker detection
+  min_speakers: 2
+  max_speakers: 2
+  
+  # Segment extraction
+  min_segment_duration: 1.0  # Minimum segment length in seconds
+  max_segment_duration: 30.0  # Maximum segment length in seconds
+  
+  # Output organization
+  save_speaker_folders: true  # Keep SPEAKER_00, SPEAKER_01 folders
+  save_gender_folders: true   # Organize by male/female folders
+  
+  # RTTM export
+  export_rttm: true  # Export diarization results in RTTM format
+
+# ============================================================================
+# GENDER CLASSIFICATION SETTINGS
+# ============================================================================
+gender_classification:
+  # Method: 'pitch' (default), 'ml', or 'multi-feature'
+  method: "pitch"
+  
+  # Pitch-based thresholds (Hz)
+  male_pitch_max: 150
+  female_pitch_min: 180
+  ambiguous_range: [150, 180]
+  
+  # Confidence thresholds
+  min_confidence: 0.5
+
+# ============================================================================
+# BATCH ORGANIZATION SETTINGS
+# ============================================================================
+batch_organization:
+  # Number of files per batch
+  files_per_batch: 10
+  
+  # Maximum batch duration (minutes)
+  batch_size_minutes: 2.0
+  
+  # File sorting
+  sort_by_duration: true  # Sort smallest to largest
+  
+  # File handling
+  copy_files: true  # true=copy, false=move
+
+# ============================================================================
+# GPU SETTINGS
+# ============================================================================
+gpu:
+  # Enable GPU acceleration
+  enabled: true
+  
+  # GPU memory management
+  gpu_memory_fraction: 0.8  # Use 80% of available VRAM
+  
+  # Batch processing
+  batch_size_gpu: 10  # Number of files to process before clearing cache
+  
+  # Memory monitoring
+  memory_threshold: 80.0  # Warn when VRAM usage exceeds 80%
+  clear_cache_between_batches: true
+  
+  # Mixed precision (for memory efficiency)
+  use_mixed_precision: true
+
+# ============================================================================
+# AUDIO PREPROCESSING SETTINGS
+# ============================================================================
+preprocessing:
+  # Target sample rate
+  sample_rate: 16000
+  
+  # Audio normalization
+  normalize_audio: true
+  target_loudness: -20.0  # LUFS
+  
+  # Noise reduction
+  apply_noise_reduction: false
+  noise_reduction_strength: 0.5
+
+# ============================================================================
+# QUALITY FILTERS
+# ============================================================================
+quality:
+  # Signal-to-Noise Ratio (dB)
+  min_snr: 10.0
+  
+  # Duration filters
+  min_duration: 1.0  # Minimum segment duration in seconds
+  max_duration: 120.0  # Maximum segment duration in seconds
+  
+  # Silence filtering
+  remove_silence: true
+  silence_threshold: -40  # dB
+  min_silence_duration: 0.5  # seconds
+
+# ============================================================================
+# DATASET ORGANIZATION
+# ============================================================================
+dataset:
+  # Folder structure
+  # Option 1: By gender (male/, female/)
+  # Option 2: By speaker (speaker_00/, speaker_01/)
+  # Option 3: Flat (all files in one folder)
+  organization: "gender"  # 'gender', 'speaker', or 'flat'
+  
+  # File naming
+  naming_pattern: "{speaker}_{gender}_{index:04d}.wav"
+  
+  # Metadata
+  save_metadata: true
+  metadata_format: "json"  # 'json' or 'csv'
+
+# ============================================================================
+# LOGGING SETTINGS
+# ============================================================================
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"
+  
+  # Log to file
+  log_to_file: true
+  log_filename: "voxent.log"
+  
+  # Console output
+  verbose: true
+  show_progress_bar: true
+
+# ============================================================================
+# PERFORMANCE SETTINGS
+# ============================================================================
+performance:
+  # Number of worker threads
+  num_workers: 4
+  
+  # Batch processing
+  prefetch_batches: 1
+  
+  # Memory limits
+  max_memory_mb: 8192  # 8GB
+
+# ============================================================================
+# ERROR HANDLING
+# ============================================================================
+error_handling:
+  # Continue on error
+  continue_on_error: true
+  
+  # Save failed files list
+  save_failed_files: true
+  failed_files_path: "logs/failed_files.txt"
+  
+  # Retry settings
+  max_retries: 2
+  retry_delay: 5  # seconds
+
+# ============================================================================
+# ADVANCED SETTINGS
+# ============================================================================
+advanced:
+  # Speaker consistency tracking
+  track_speaker_consistency: false
+  
+  # Agent vs customer detection (set to false for personal conversations)
+  detect_agent_customer: false
+  
+  # Audio augmentation
+  apply_augmentation: false
+  augmentation_methods: []
+  
+  # Voice activity detection
+  use_vad: true
+  vad_threshold: 0.5

@@ -1,0 +1,17 @@
+# Ignore large data folders
+data/input/
+data/voice_dataset/female/
+
+# Ignore virtual environment
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore other common files
+.DS_Store
+*.log
+*.tmp
