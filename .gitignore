@@ -1,6 +1,7 @@
 # Ignore large data folders
+data/
 data/input/
-data/voice_dataset/female/
+data/voice_dataset/
 
 # Ignore virtual environment
 .venv/
